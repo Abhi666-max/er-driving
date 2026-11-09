@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>ER.DRIVING | Indian Village Supercar Highway by Abhijeet kangane</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23ff9933'/%3E%3Ccircle cx='50' cy='50' r='38' fill='%23ffffff'/%3E%3Ccircle cx='50' cy='50' r='24' fill='%23138808'/%3E%3Ccircle cx='50' cy='50' r='10' fill='%23000080'/%3E%3C/svg%3E" />
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Changa:wght@600;700;800&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --saffron: #ff8800;
+        --gold: #ffcc00;
+        --green: #11aa44;
+        --sky: #3b82f6;
+      }
+
+      * {
+        box-sizing: border-box;
+        user-select: none;
+        -webkit-user-select: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      body, html {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #5ca5e8;
+        font-family: 'Changa', 'Rajdhani', sans-serif;
+        color: #fff;
+      }
+
+      #canvas-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+      }
+
+      #hud {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 10;
+        pointer-events: none;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 14px 20px;
+      }
+
+      .interactive {
+        pointer-events: auto;
+      }
+
+      /* Top Header */
+      .top-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+      }
+
+      .brand-card {
+        background: rgba(20, 24, 36, 0.82);
+        backdrop-filter: blur(10px);
+        border: 2px solid var(--saffron);
+        border-radius: 14px;
+        padding: 8px 18px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+      }
+
+      .brand-title {
+        font-size: 24px;
+        font-weight: 800;
+        letter-spacing: 1px;
+        background: linear-gradient(90deg, #ff9933, #ffffff, #138808);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .brand-author {
+        font-size: 13px;
+        color: #ffcc00;
+        font-weight: 700;
+      }
+
+      /* Mission Badge */
+      .mission-badge {
+        background: rgba(18, 24, 38, 0.88);
+        backdrop-filter: blur(10px);
+        border: 2px solid var(--gold);
+        border-radius: 14px;
+        padding: 8px 24px;
+        text-align: center;
+        min-width: 290px;
+        box-shadow: 0 4px 18px rgba(255, 204, 0, 0.25);
+      }
+
+      .mission-title {
+        font-size: 15px;
+        font-weight: 800;
+        color: var(--gold);
+        letter-spacing: 1px;
+      }
+
+      .mission-desc {
+        font-size: 13px;
+        color: #e2e8f0;
+      }
+
+      .progress-bar-wrap {
+        width: 100%;
+        height: 6px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 3px;
+        margin-top: 6px;
+        overflow: hidden;
+      }
+
+      .progress-bar-fill {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, var(--gold), var(--green));
+        transition: width 0.15s ease-out;
+      }
+
+      /* Top Actions */
+      .top-buttons {
+        display: flex;
+        gap: 8px;
+      }
+
+      .hud-btn {
+        background: rgba(18, 24, 38, 0.85);
+        backdrop-filter: blur(8px);
+        border: 1.5px solid rgba(255, 255, 255, 0.3);
+        color: #fff;
+        padding: 7px 14px;
+        border-radius: 10px;
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+
+      .hud-btn:hover {
+        background: rgba(255, 136, 0, 0.25);
+        border-color: var(--saffron);
+      }
+
+      /* Bottom Controls */
+      .bottom-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        width: 100%;
+        gap: 20px;
+      }
+
+      /* Steering Wheel */
+      .wheel-container {
+        position: relative;
+        width: 220px;
+        height: 220px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .steering-wheel-disc {
+        width: 205px;
+        height: 205px;
+        background-image: url('/assets/ui/steering_wheel.png');
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        cursor: grab;
+        touch-action: none;
+        filter: drop-shadow(0 6px 16px rgba(0,0,0,0.5));
+      }
+
+      .steering-wheel-disc:active {
+        cursor: grabbing;
+      }
+
+      .steer-angle-pill {
+        position: absolute;
+        top: -12px;
+        background: rgba(15, 20, 30, 0.85);
+        border: 1px solid var(--saffron);
+        color: var(--gold);
+        font-size: 12px;
+        font-weight: 800;
+        padding: 2px 10px;
+        border-radius: 10px;
+      }
+
+      /* Dashboard Speedometer & Desi Horn */
+      .dashboard-center {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background: rgba(16, 22, 34, 0.88);
+        backdrop-filter: blur(12px);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        padding: 10px 28px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+      }
+
+      .blinker-strip {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+
+      .blinker-btn {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #94a3b8;
+        width: 38px;
+        height: 32px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 900;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .blinker-btn.active {
+        background: var(--gold);
+        color: #000;
+        box-shadow: 0 0 12px var(--gold);
+      }
+
+      .speedo-val {
+        font-size: 58px;
+        font-weight: 800;
+        line-height: 1;
+        color: #ffffff;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+      }
+
+      .speedo-unit {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--gold);
+        letter-spacing: 2px;
+      }
+
+      .desi-horn-btn {
+        margin-top: 8px;
+        background: linear-gradient(90deg, #ff8800, #ffaa00);
+        border: none;
+        color: #000;
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 800;
+        padding: 4px 16px;
+        border-radius: 12px;
+        cursor: pointer;
+        box-shadow: 0 2px 10px rgba(255, 136, 0, 0.4);
+      }
+
+      .desi-horn-btn:active {
+        transform: scale(0.96);
+      }
+
+      /* Right Controls: Gear Shifter + Pedals */
+      .right-cluster {
+        display: flex;
+        align-items: flex-end;
+        gap: 16px;
+      }
+
+      .gearbox-wrap {
+        width: 76px;
+        height: 258px;
+        background-image: url('/assets/ui/gear_track.png');
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+      }
+
+      .gear-slot {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 22px;
+        font-weight: 800;
+        color: #c4d0e0;
+        cursor: pointer;
+        transition: all 0.15s;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+      }
+
+      .gear-slot.active {
+        background: radial-gradient(circle, #ffaa00 20%, rgba(255, 170, 0, 0.25) 70%, transparent 100%);
+        color: #ffffff;
+        text-shadow: 0 0 10px #ffaa00;
+        transform: scale(1.15);
+      }
+
+      .gear-slot.active.reverse {
+        background: radial-gradient(circle, #ff2244 20%, rgba(255, 34, 68, 0.25) 70%, transparent 100%);
+        text-shadow: 0 0 10px #ff2244;
+      }
+
+      /* Pedals */
+      .pedals-wrap {
+        display: flex;
+        align-items: flex-end;
+        gap: 12px;
+      }
+
+      .pedal-box {
+        cursor: pointer;
+        touch-action: none;
+        transition: transform 0.08s;
+        filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.5));
+      }
+
+      .pedal-box:active, .pedal-box.pressed {
+        transform: translateY(8px) scale(0.96);
+      }
+
+      .pedal-brake-img {
+        width: 95px;
+        height: 118px;
+        background-image: url('/assets/ui/pedal_brake.png');
+        background-size: contain;
+        background-repeat: no-repeat;
+      }
+
+      .pedal-gas-img {
+        width: 91px;
+        height: 118px;
+        background-image: url('/assets/ui/pedal_gas.png');
+        background-size: contain;
+        background-repeat: no-repeat;
+      }
+
+      .pedal-gas-img.pressed {
+        width: 56px;
+        height: 118px;
+        background-image: url('/assets/ui/pedal_gas_pressed.png');
+        background-size: contain;
+        background-repeat: no-repeat;
+      }
+
+      /* Modal Screen: Supercar Garage & Indian Village Missions */
+      .modal-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(10, 14, 24, 0.88);
+        backdrop-filter: blur(12px);
+        z-index: 100;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
+
+      .modal-box {
+        background: #141a29;
+        border: 2px solid var(--saffron);
+        border-radius: 22px;
+        padding: 30px 38px;
+        max-width: 540px;
+        width: 100%;
+        text-align: center;
+        box-shadow: 0 0 50px rgba(255, 136, 0, 0.35);
+      }
+
+      .modal-title {
+        font-size: 32px;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+        background: linear-gradient(90deg, #ff9933, #ffffff, #138808);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .modal-subtitle {
+        font-size: 14px;
+        color: #94a3b8;
+        margin-bottom: 20px;
+      }
+
+      .modal-subtitle span {
+        color: var(--gold);
+        font-weight: 700;
+      }
+
+      .section-label {
+        font-size: 13px;
+        font-weight: 800;
+        color: var(--gold);
+        letter-spacing: 1px;
+        margin-bottom: 8px;
+        text-align: left;
+        text-transform: uppercase;
+      }
+
+      /* Supercar Garage Grid */
+      .car-select-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 8px;
+        margin-bottom: 18px;
+      }
+
+      .car-opt-btn {
+        background: #1e2638;
+        border: 1.5px solid rgba(255, 255, 255, 0.15);
+        color: #cbd5e1;
+        padding: 10px 4px;
+        border-radius: 10px;
+        font-family: inherit;
+        font-size: 12px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: all 0.15s;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .car-opt-btn:hover {
+        border-color: var(--saffron);
+      }
+
+      .car-opt-btn.active {
+        background: rgba(255, 136, 0, 0.25);
+        border-color: var(--saffron);
+        color: #ffffff;
+        box-shadow: 0 0 12px rgba(255, 136, 0, 0.4);
+      }
+
+      /* Mission Grid */
+      .mission-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-bottom: 22px;
+      }
+
+      .m-btn {
+        background: #1e2638;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: #cbd5e1;
+        padding: 9px;
+        border-radius: 10px;
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+
+      .m-btn.active {
+        background: rgba(255, 204, 0, 0.2);
+        border-color: var(--gold);
+        color: var(--gold);
+      }
+
+      .start-btn {
+        width: 100%;
+        background: linear-gradient(90deg, #ff8800, #ffaa00);
+        border: none;
+        color: #000;
+        font-family: inherit;
+        font-size: 19px;
+        font-weight: 800;
+        padding: 13px;
+        border-radius: 12px;
+        cursor: pointer;
+        box-shadow: 0 4px 20px rgba(255, 136, 0, 0.45);
+        transition: transform 0.15s;
+      }
+
+      .start-btn:hover {
+        transform: translateY(-2px);
+      }
+
+      .footer-credit {
+        margin-top: 16px;
+        font-size: 12px;
+        color: #64748b;
+      }
+
+      .footer-credit span {
+        color: var(--gold);
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 3D Canvas -->
+    <div id="canvas-container"></div>
+
+    <!-- HUD Overlay -->
+    <div id="hud">
+      <!-- Top Bar -->
+      <div class="top-bar">
+        <div class="brand-card interactive">
+          <div class="brand-title">ER.DRIVING: GAON HIGHWAY</div>
+          <div class="brand-author">RE-ENGINEERED BY <span>ABHIJEET KANGANE</span></div>
+        </div>
+
+        <div class="mission-badge interactive">
+          <div class="mission-title" id="hud-m-title">DHABA VIP PARKING</div>
+          <div class="mission-desc" id="hud-m-desc">Park outside Kangane Dhaba and shift to P.</div>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar-fill" id="hud-m-progress"></div>
+          </div>
+        </div>
+
+        <div class="top-buttons interactive">
+          <button class="hud-btn" id="btn-cam">CAM: CHASE</button>
+          <button class="hud-btn" id="btn-audio">AUDIO: ON</button>
+          <button class="hud-btn" id="btn-menu">GARAGE</button>
+        </div>
+      </div>
+
+      <!-- Bottom Driving Controls -->
+      <div class="bottom-bar">
+        <!-- Dr. Driving Steering Wheel -->
+        <div class="wheel-container interactive">
+          <div class="steer-angle-pill" id="steer-pill">0°</div>
+          <div class="steering-wheel-disc" id="wheel-img"></div>
+        </div>
+
+        <!-- Dashboard Gauges & Desi Horn -->
+        <div class="dashboard-center">
+          <div class="blinker-strip interactive">
+            <button class="blinker-btn" id="btn-blink-l">◀</button>
+            <div class="speedo-val" id="speed-val">0</div>
+            <button class="blinker-btn" id="btn-blink-r">▶</button>
+          </div>
+          <div class="speedo-unit">KM / H</div>
+          <button class="desi-horn-btn interactive" id="btn-horn">DESI HORN [H]</button>
+        </div>
+
+        <!-- Gearbox & Pedals -->
+        <div class="right-cluster interactive">
+          <!-- Gear Track (P - R - N - D) -->
+          <div class="gearbox-wrap">
+            <div class="gear-slot active" data-gear="P">P</div>
+            <div class="gear-slot" data-gear="R">R</div>
+            <div class="gear-slot" data-gear="N">N</div>
+            <div class="gear-slot" data-gear="D">D</div>
+          </div>
+
+          <!-- Pedals -->
+          <div class="pedals-wrap">
+            <div class="pedal-box" id="pedal-brake">
+              <div class="pedal-brake-img"></div>
+            </div>
+            <div class="pedal-box" id="pedal-gas">
+              <div class="pedal-gas-img" id="gas-img"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Garage & Start Modal -->
+    <div class="modal-bg" id="modal-screen">
+      <div class="modal-box">
+        <div class="modal-title">ER.DRIVING &middot; GARAGE</div>
+        <div class="modal-subtitle">
+          100% Indian Village Supercar Simulation &middot; By <span>Abhijeet kangane</span>
+        </div>
+
+        <!-- Supercar Garage Selection -->
+        <div class="section-label">Select Your Supercar</div>
+        <div class="car-select-grid">
+          <button class="car-opt-btn active" data-brand="FERRARI">
+            <span>FERRARI</span>
+            <small style="color:#d40000;">SF90 Red</small>
+          </button>
+          <button class="car-opt-btn" data-brand="BUGATTI">
+            <span>BUGATTI</span>
+            <small style="color:#0088ff;">Chiron Blue</small>
+          </button>
+          <button class="car-opt-btn" data-brand="BMW">
+            <span>BMW</span>
+            <small style="color:#00aa66;">M4 Green</small>
+          </button>
+          <button class="car-opt-btn" data-brand="MERCEDES">
+            <span>MERCEDES</span>
+            <small style="color:#ffaa00;">AMG Gold</small>
+          </button>
+          <button class="car-opt-btn" data-brand="AUDI">
+            <span>AUDI</span>
+            <small style="color:#e2e8f0;">R8 White</small>
+          </button>
+        </div>
+
+        <!-- Mission Selection -->
+        <div class="section-label">Select Highway Mission</div>
+        <div class="mission-grid">
+          <button class="m-btn active" data-mission="VIP_PARKING">Dhaba VIP Parking</button>
+          <button class="m-btn" data-mission="HIGHWAY_SPEED">Gaon Highway Speed</button>
+          <button class="m-btn" data-mission="COMFORT_DRIVE">Executive Smooth Ride</button>
+          <button class="m-btn" data-mission="TRAFFIC_WEAVE">Tuk-Tuk & Truck Weave</button>
+        </div>
+
+        <button class="start-btn" id="btn-start">DRIVE IN INDIAN VILLAGE</button>
+
+        <div class="footer-credit">
+          Ferrari &middot; Bugatti &middot; BMW &middot; Mercedes &middot; Audi &middot; Re-engineered by <span>Abhijeet kangane</span>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
